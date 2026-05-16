@@ -60,6 +60,7 @@ $pageTitle = trim($templateParams->get('logoTopTitle', '') . ' ' . $templatePara
 if (empty($pageTitle)) {
     $pageTitle = $app->get('sitename');
 }
+$primaryColor = $templateParams->get('primary_color', '#0066cc');
 
 // Estrazione parametri custom dal menu item
 $quoteText = $this->params->get('quote_text', '"Aiutami a fare da me"');
@@ -85,7 +86,7 @@ $sediArticles = $db->loadObjectList();
 
 ?>
 
-<section class="it-hero-wrapper bg-primary py-5 text-white" style="background-image: linear-gradient(rgba(0, 102, 204, 0.8), rgba(0, 102, 204, 0.8)), url('<?php echo $bgImage; ?>'); background-size: cover; background-position: center;">
+<section class="it-hero-wrapper bg-primary py-5 text-white" style="background-image: linear-gradient(<?php echo $primaryColor; ?>cc, <?php echo $primaryColor; ?>cc), url('<?php echo $bgImage; ?>'); background-size: cover; background-position: center;">
 <div class="container py-5">
 <div class="row align-items-center"><!-- Colonna Testo/Citazione -->
 <div class="col-lg-6 mb-4 mb-lg-0">

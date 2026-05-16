@@ -17,71 +17,74 @@ use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Component\Content\Administrator\Extension\ContentComponent;
 use Joomla\Component\Content\Site\Helper\RouteHelper;
-use Joomla\CMS\Language\Text;
 
-// Create a shortcut for params.
-$params = $this->item->params;
-$canEdit = $this->item->params->get('access-edit');
-$info    = $params->get('info_block_position', 0);
-
-// Check if associations are implemented. If they are, define the parameter.
-$assocParam = (Associations::isEnabled() && $params->get('show_associations'));
+$params    = $this->item->params;
+$canEdit   = $this->item->params->get('access-edit');
+$info      = $params->get('info_block_position', 0);
 
 $currentDate   = Factory::getDate()->format('Y-m-d H:i:s');
 $isUnpublished = ($this->item->state == ContentComponent::CONDITION_UNPUBLISHED || $this->item->publish_up > $currentDate)
     || ($this->item->publish_down < $currentDate && $this->item->publish_down !== null);
 
-
-
 $introimg = json_decode($this->item->images);
 
+$app           = Factory::getApplication();
+$template      = $app->getTemplate(true)->template;
+$baseImagePath = Uri::root(false) . 'media/templates/site/' . $template . '/images/';
 
-$baseImagePath = Uri::root(false) . "media/templates/site/joomla-italia-theme/images/";
+$link = Route::_(RouteHelper::getArticleRoute($this->item->slug, $this->item->catid, $this->item->language));
 
+// ── Parsing del campo "Didascalia immagine intro"
+$captionRaw   = $introimg->image_intro_caption ?? '';
+$captionParts = explode('|', $captionRaw, 2);
+$iconName     = trim($captionParts[0]) ?: 'it-map-marker';  // Default to map marker for luoghi
+
+// Ricava il nome colore
+$colorName    = isset($captionParts[1]) ? preg_replace('/[^a-z0-9_-]/i', '', trim($captionParts[1])) : '';
+$colorName    = $colorName ?: 'primary';
+$borderClass  = 'border-' . $colorName;
+$iconClass    = 'icon-' . $colorName;
+$btnClass     = 'btn-outline-' . $colorName;
+
+// Scegli lo sprite corretto
+$spriteFile = str_starts_with($iconName, 'bi-') ? 'bootstrap-icons.svg' : 'sprites.svg';
+$iconAnchor = ($spriteFile === 'bootstrap-icons.svg') ? substr($iconName, 3) : $iconName;
 
 ?>
 
+<article class="it-card rounded border-top border-4 <?php echo $borderClass; ?> shadow-sm h-100 d-flex flex-column<?php echo $isUnpublished ? ' system-unpublished' : ''; ?>">
 
-<div class="card card-servizi card-bg card-icon rounded h-100">
-    <?php if ($isUnpublished) : ?>
-        <div class="system-unpublished">
-    <?php endif; ?>
+    <div class="it-card-icon-area text-center pt-4 pb-2">
+        <svg class="icon icon-xl <?php echo $iconClass; ?>" aria-hidden="true">
+            <use href="<?= $baseImagePath ?><?= $spriteFile ?>#<?php echo htmlspecialchars($iconAnchor, ENT_QUOTES, 'UTF-8'); ?>"></use>
+        </svg>
+    </div>
 
+    <div class="it-card-body d-flex flex-column flex-grow-1 p-3">
 
-     <a href="<?php echo Route::_(RouteHelper::getArticleRoute($this->item->slug, $this->item->catid, $this->item->language)); ?>" itemprop="url" data-element="service-link">
-        <div class="card-body">
-            <svg class="icon">
-                <use xlink:href="<?= $baseImagePath ?>sprites.svg#it-map-marker"></use>
-            </svg>
-            <div class="card-icon-content">
-                <?php echo LayoutHelper::render('joomla.content.blog_style_j4a_sottocategoria_item_title', $this->item); ?>
-                <?php echo $this->item->event->afterDisplayTitle; ?>
+        <h3 class="it-card-title h6 mb-2">
+            <a href="<?php echo $link; ?>"><?php echo $this->item->title; ?></a>
+        </h3>
 
-                <?php if ($canEdit) : ?>
-                    <?php echo LayoutHelper::render('joomla.content.icons', ['params' => $params, 'item' => $this->item]); ?>
-                <?php endif; ?>
-                    <small><?php echo JHTML::_('string.truncate', $this->item->introtext, 200, false, false) ; ?></small>
-
-
-                <?php if ($params->get('show_readmore') && $this->item->readmore) :
-                    if ($params->get('access-view')) :
-                        $link = Route::_(RouteHelper::getArticleRoute($this->item->slug, $this->item->catid, $this->item->language));
-                    else :
-                        $menu = Factory::getApplication()->getMenu();
-                        $active = $menu->getActive();
-                        $itemId = $active->id;
-                        $link = new Uri(Route::_('index.php?option=com_users&view=login&Itemid=' . $itemId, false));
-                        $link->setVar('return', base64_encode(RouteHelper::getArticleRoute($this->item->slug, $this->item->catid, $this->item->language)));
-                    endif; ?>
-
-                    <?php echo LayoutHelper::render('joomla.content.readmore', ['item' => $this->item, 'params' => $params, 'link' => $link]); ?>
-
-                <?php endif; ?>
-                <?php if ($isUnpublished) : ?>
-                    </div>
-                <?php endif; ?>
-
+        <?php if ($params->get('show_tags', 1) && !empty($this->item->tags->itemTags)) : ?>
+            <div class="mb-2">
+                <?php echo LayoutHelper::render('joomla.content.tags', $this->item->tags->itemTags); ?>
             </div>
-        </div>
-    </a>
-</div>
+        <?php endif; ?>
+
+        <p class="it-card-text small flex-grow-1 px-3">
+            <?php echo \Joomla\CMS\HTML\HTMLHelper::_('string.truncate', strip_tags($this->item->introtext), 160, false, false); ?>
+        </p>
+
+        <footer class="it-card-related mt-auto pt-2">
+            <a href="<?php echo $link; ?>" class="btn <?php echo $btnClass; ?> btn-sm w-100">
+                DETTAGLI
+            </a>
+        </footer>
+
+        <?php if ($canEdit) : ?>
+            <?php echo LayoutHelper::render('joomla.content.icons', ['params' => $params, 'item' => $this->item]); ?>
+        <?php endif; ?>
+
+    </div>
+</article>

@@ -117,17 +117,29 @@ $authorisedViewLevels = $user->getAuthorisedViewLevels();
                             </div>
                             <div class="row">
                                 <?php $kategoriereset = 0; ?>
+                                <?php 
+                                    $isEdifici = (strtolower($kategorie->alias) === 'edifici-scolastici' || strtolower($kategorie->alias) === 'edifici' || strtolower($kategorie->title) === 'edifici scolastici');
+                                ?>
                                 <?php if (!empty($this->intro_items)) : ?>
                                     <?php foreach ($this->intro_items as $key => &$item) : ?>
                                         <?php if ($item->catid !== $kategorie->id) {
                                             continue;
                                         } ?>
-                                        <div class="col-md-4 col-12 mb-4">
+                                        <?php if ($isEdifici) : ?>
+                                            <div class="col-md-6 col-12 mb-4">
                                                 <?php
-                                                                                        $this->item = & $item;
-                                        echo $this->loadTemplate('itemsottocategorie');
-                                        ?>
-                                        </div>
+                                                $this->item = &$item;
+                                                echo $this->loadTemplate('item_edificio');
+                                                ?>
+                                            </div>
+                                        <?php else : ?>
+                                            <div class="col-lg-3 col-sm-6 col-12 mb-4">
+                                                <?php
+                                                $this->item = &$item;
+                                                echo $this->loadTemplate('itemsottocategorie');
+                                                ?>
+                                            </div>
+                                        <?php endif; ?>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </div>

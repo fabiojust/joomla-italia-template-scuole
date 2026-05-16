@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <metadata>
-	<layout title="Blog per le categorie della sezione luoghi della scuola" option="luoghi">
+	<layout title="Blog per le categorie della sezione luoghi della scuola NEXT" option="luoghi">
 		<help key = "Menu_Item:_Category_Blog" />
 		<message>
 			<![CDATA[COM_CONTENT_CATEGORY_VIEW_BLOG_DESC]]>
