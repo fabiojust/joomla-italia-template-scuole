@@ -1,0 +1,430 @@
+<?php
+/* @package Joomla
+ * @copyright Copyright (C) Open Source Matters. All rights reserved.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
+ * @extension Phoca Extension
+ * @copyright Copyright (C) Jan Pavelka www.phoca.cz
+ * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL
+ */
+defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Session\Session;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Uri\Uri;
+
+$app      = Factory::getApplication();
+$template = $app->getTemplate(true)->template;
+$spritePath = Uri::root(true) . '/media/templates/site/' . $template . '/images/sprites.svg';
+
+echo '<div id="phoca-dl-file-box" class="pd-file-view container py-4 '.$this->t['p']->get( 'pageclass_sfx' ).'" >';
+
+//if ( $this->t['p']->get( 'show_page_heading' ) ) {
+//	echo '<h1>'. $this->escape($this->t['p']->get('page_heading')) . '</h1>';
+//}
+echo PhocaDownloadRenderFront::renderHeader(array());
+
+if (!empty($this->category[0])) {
+	echo '<div class="pd-file">';
+	if ($this->t['display_up_icon'] == 1 && $this->t['tmplr'] == 0) {
+
+		if (isset($this->category[0]->id)) {
+			if ($this->category[0]->id > 0) {
+				$linkUp = Route::_(PhocaDownloadRoute::getCategoryRoute($this->category[0]->id, $this->category[0]->alias));
+				$linkUpText = $this->category[0]->title;
+			} else {
+				$linkUp 	= '#';
+				$linkUpText = '';
+			}
+
+			echo '<div class="ph-top mb-4">'
+				.'<a class="btn btn-outline-primary btn-sm d-inline-flex align-items-center" title="'.$linkUpText.'" href="'. $linkUp.'" >'
+				.'<svg class="icon icon-primary icon-xs me-2"><use href="'.$spritePath.'#it-arrow-left"></use></svg>'
+				. $linkUpText
+				.'</a></div>';
+		}
+	}
+} else {
+	echo '<div class="pd-file"><div class="ph-top"></div>';
+}
+
+
+if (!empty($this->file[0])) {
+	$v = $this->file[0];
+
+	// USER RIGHT - Access of categories (if file is included in some not accessed category) - - - - -
+	// ACCESS is handled in SQL query, ACCESS USER ID is handled here (specific users)
+	$rightDisplay	= 0;
+	if (!empty($this->category[0])) {
+		$rightDisplay = PhocaDownloadAccess::getUserRight('accessuserid', $v->cataccessuserid, $v->cataccess, $this->t['user']->getAuthorisedViewLevels(), $this->t['user']->get('id', 0), 0);
+	}
+	// - - - - - - - - - - - - - - - - - - - - - -
+
+	if ($rightDisplay == 1) {
+
+		$l = new PhocaDownloadLayout();
+
+		//echo '<h3 class="pdfv-name">'.$l->getName($v->title, $v->filename, 1). '</h3>';
+		echo PhocaDownloadRenderFront::renderSubHeader(array($l->getName($v->title, $v->filename, 1)), '', 'pd-ctitle pdfv-name');
+
+
+// =====================================================================================
+// BEGIN LAYOUT AREA
+// =====================================================================================
+
+		// Is this direct menu link to File View
+		$directFv 	= 0;
+		$app		= Factory::getApplication();
+		$itemId 	= $app->getInput()->get('Itemid', 0, 'int');
+		$menu		= $app->getMenu();
+		$item		= $menu->getItem($itemId);
+		if (isset($item->query['view']) && $item->query['view'] == 'file') {
+			$directFv = 1;
+		}
+		// End direct menu link to File View
+
+		if ((int)$this->t['display_file_view'] == 1
+		|| (int)$this->t['display_file_view'] == 2
+		|| (int)$v->confirm_license > 0
+		|| (int)$this->t['display_detail'] == 2
+		|| (int)$this->t['display_detail'] == 3
+		|| (int)$directFv == 1) {
+
+			$pdTitle = '';
+			if ($v->title != '' && $this->t['filename_or_name'] != 'filenametitle') {
+				$pdTitle .= '<div class="pd-title">'.$v->title.'</div>';
+			}
+
+			$pdImage = '';
+			if ($v->image_download != '') {
+				$pdImage .= '<div class="pd-image">'.$l->getImageDownload($v->image_download).'</div>';
+			}
+
+			$pdVideo = '';
+			$pdVideo = $l->displayVideo($v->video_filename, 1);
+
+			if ($v->filename != '') {
+				$imageFileName = $l->getImageFileName($v->image_filename, $v->filename);
+
+				$pdFile = '<div class="pd-filenamebox">';
+				if ($this->t['filename_or_name'] == 'filenametitle') {
+					$pdFile .= '<div class="pd-title">'. $v->title . '</div>';
+				}
+
+				$pdFile .= '<div class="pd-filename">'. $imageFileName['filenamethumb']
+					. '<div class="pd-document'.$this->t['file_icon_size'].'" '
+					. $imageFileName['filenamestyle'].'>';
+
+				$pdFile .= '<div class="pd-float">';
+				$pdFile .= $l->getName($v->title, $v->filename);
+				$pdFile .= '</div>';
+
+				$pdFile .= PhocaDownloadRenderFront::displayNewIcon($v->date, $this->t['displaynew']);
+				$pdFile .= PhocaDownloadRenderFront::displayHotIcon($v->hits, $this->t['displayhot']);
+
+				// String Tags - title suffix
+				$tagsS = $l->displayTagsString($v->tags_string);
+				if ($tagsS != '') {
+					$pdFile .= '<div class="pd-float">'.$tagsS.'</div>';
+				}
+
+				// Tags - title suffix
+				if ($this->t['display_tags_links'] == 5 || $this->t['display_tags_links'] == 6) {
+					$tags = $l->displayTags($v->id, 1);
+					if ($tags != '') {
+						$pdFile .= '<div class="pd-float">'.$tags.'</div>';
+					}
+				}
+
+				//Specific icons
+				if (isset($v->image_filename_spec1) && $v->image_filename_spec1 != '') {
+					$pdFile .= '<div class="pd-float">'.$l->getImageDownload($v->image_filename_spec1).'</div>';
+				}
+				if (isset($v->image_filename_spec2) && $v->image_filename_spec2 != '') {
+					$pdFile .= '<div class="pd-float">'.$l->getImageDownload($v->image_filename_spec2).'</div>';
+				}
+
+				$pdFile .= '</div></div></div>' . "\n";
+			}
+
+			$pdFileSize = '';
+			$fileSize = $l->getFilesize($v->filename);
+			if ($fileSize != '') {
+				$pdFileSize .= '<div class="pd-filesize-txt">'.Text::_('COM_PHOCADOWNLOAD_FILESIZE').':</div>';
+				$pdFileSize .= '<div class="pd-fl-m">'.$fileSize.'</div>';
+			}
+
+			$pdVersion = '';
+			if ($v->version != '') {
+				$pdVersion .= '<div class="pd-version-txt">'.Text::_('COM_PHOCADOWNLOAD_VERSION').':</div>';
+				$pdVersion .= '<div class="pd-fl-m">'.$v->version.'</div>';
+			}
+
+			$pdLicense = '';
+			if ($v->license != '') {
+				if ($v->license_url != '') {
+					$pdLicense .= '<div class="pd-license-txt">'.Text::_('COM_PHOCADOWNLOAD_LICENSE').':</div>';
+					$pdLicense .= '<div class="pd-fl-m"><a href="'.$v->license_url.'" target="_blank">'.$v->license.'</a></div>';
+				} else {
+					$pdLicense .= '<div class="pd-license-txt">'.Text::_('COM_PHOCADOWNLOAD_LICENSE').':</div>';
+					$pdLicense .= '<div class="pd-fl-m">'.$v->license.'</div>';
+				}
+			}
+
+			$pdAuthor = '';
+			if ($v->author != '') {
+				if ($v->author_url != '') {
+					$pdAuthor .= '<div class="pd-author-txt">'.Text::_('COM_PHOCADOWNLOAD_AUTHOR').':</div>';
+					$pdAuthor .= '<div class="pd-fl-m"><a href="'.$v->author_url.'" target="_blank">'.$v->author.'</a></div>';
+				} else {
+					$pdAuthor .= '<div class="pd-author-txt">'.Text::_('COM_PHOCADOWNLOAD_AUTHOR').':</div>';
+					$pdAuthor .= '<div class="pd-fl-m">'.$v->author.'</div>';
+				}
+			}
+
+			$pdAuthorEmail = '';
+			if ($v->author_email != '') {
+				$pdAuthorEmail .= '<div class="pd-email-txt">'.Text::_('COM_PHOCADOWNLOAD_EMAIL').':</div>';
+				$pdAuthorEmail .= '<div class="pd-fl-m">'. $l->getProtectEmail($v->author_email).'</div>';
+			}
+
+			$pdFileDate = '';
+			$fileDate = $l->getFileDate($v->filename, $v->date);
+			if ($fileDate != '') {
+				$pdFileDate .= '<div class="pd-date-txt">'.Text::_('COM_PHOCADOWNLOAD_DATE').':</div>';
+				$pdFileDate .= '<div class="pd-fl-m">'.$fileDate.'</div>';
+			}
+
+			$pdDownloads = '';
+			if ($this->t['display_downloads'] == 1) {
+				$pdDownloads .= '<div class="pd-downloads-txt">'.Text::_('COM_PHOCADOWNLOAD_DOWNLOADS').':</div>';
+				$pdDownloads .= '<div class="pd-fl-m">'.$v->hits.' x</div>';
+
+				/*for ($i = 2; $i < 1001; $i++) {
+					if (($v->hits > 1 && $v->hits < 5)
+						|| ($v->hits > $i * 10 + 1 && $v->hits < $i * 10 + 5)) {
+						$numD = 'COM_PHOCADOWNLOAD_NUMBER_OF_DOWNLOADS_3';
+						break;
+					} elseif (($v->hits == 0)
+						|| ($v->hits > 4 && $v->hits < 22)
+						|| ($v->hits > $i * 10 + 4 && $v->hits < $i * 10 + 12)) {
+						$numD = 'COM_PHOCADOWNLOAD_NUMBER_OF_DOWNLOADS_2';
+						break;
+					} elseif ($v->hits == 1) {
+						$numD = 'COM_PHOCADOWNLOAD_NUMBER_OF_DOWNLOADS_1';
+						break;
+					}
+				}
+				$pdDownloads .= '<div class="pd-fl-m">'.$v->hits.' '.Text::_($numD).'</div>';
+				*/
+			}
+
+			$pdDescription = '';
+			if ($l->isValueEditor($v->description)) {
+				//$pdDescription .= '<div class="pd-fdesc">'.$v->description.'</div>';
+				$pdDescription .= '<div class="pd-fdesc">'. HTMLHelper::_('content.prepare', $v->description) . '</div>';
+			}
+
+			$pdFeatures = '';
+			if ($l->isValueEditor($v->features)) {
+				$pdFeatures .= '<div class="pd-features-txt">'.Text::_('COM_PHOCADOWNLOAD_FEATURES').'</div>';
+				$pdFeatures .= '<div class="pd-features">'.$v->features.'</div>';
+			}
+
+			$pdChangelog = '';
+			if ($l->isValueEditor($v->changelog)) {
+				$pdChangelog .= '<div class="pd-changelog-txt">'.Text::_('COM_PHOCADOWNLOAD_CHANGELOG').'</div>';
+				$pdChangelog .= '<div class="pd-changelog">'.$v->changelog.'</div>';
+			}
+
+			$pdNotes = '';
+			if ($l->isValueEditor($v->notes)) {
+				$pdNotes .= '<div class="pd-notes-txt">'.Text::_('COM_PHOCADOWNLOAD_NOTES').'</div>';
+				$pdNotes .= '<div class="pd-notes">'.$v->notes.'</div>';
+			}
+
+
+			/// pdmirrorlink1
+			$pdMirrorLink1 = '';
+			$mirrorOutput1 = PhocaDownloadRenderFront::displayMirrorLinks(1, $v->mirror1link, $v->mirror1title, $v->mirror1target);
+
+			if ($mirrorOutput1 != '') {
+
+				if ($this->t['display_mirror_links'] == 4 || $this->t['display_mirror_links'] == 6) {
+					$classMirror = 'pd-button-mirror1';
+					$mirrorOutput1 = str_replace('class=""', 'class="btn btn-primary "', $mirrorOutput1);
+				} else {
+					$classMirror = 'pd-mirror-bp';
+				}
+
+				$pdMirrorLink1 = '<div class="'.$classMirror.'">'.$mirrorOutput1.'</div>';
+			}
+
+			/// pdmirrorlink2
+			$pdMirrorLink2 = '';
+			$mirrorOutput2 = PhocaDownloadRenderFront::displayMirrorLinks(1, $v->mirror2link, $v->mirror2title, $v->mirror2target);
+			if ($mirrorOutput2 != '') {
+				if ($this->t['display_mirror_links'] == 4 || $this->t['display_mirror_links'] == 6) {
+					$classMirror = 'pd-button-mirror2';
+					$mirrorOutput2 = str_replace('class=""', 'class="btn btn-primary "', $mirrorOutput2);
+				} else {
+					$classMirror = 'pd-mirror-bp';
+				}
+
+				$pdMirrorLink2 = '<div class="'.$classMirror.'">'.$mirrorOutput2.'</div>';
+			}
+
+			// pdreportlink
+			$pdReportLink = PhocaDownloadRenderFront::displayReportLink(1, $v->title);
+
+
+			// pdrating
+			$pdRating 	= PhocaDownloadRate::renderRateFile($v->id, $this->t['display_rating_file']);
+
+			// pdtags
+			$pdTags = '';
+			if ($this->t['display_tags_links'] == 2 || $this->t['display_tags_links'] == 3) {
+				$tags2 = $l->displayTags($v->id);
+				if ($tags2 != '') {
+					$pdTags .= '<div class="pd-float">'.$tags2.'</div>';
+				}
+			}
+
+			// RENDER
+			echo '<div class="pd-filebox card shadow-sm border-light mt-4">';
+			echo '<div class="card-body p-4">';
+			
+			echo '<div class="row">';
+			echo '<div class="col-lg-8">';
+				echo '<div class="mb-3">'.$pdTitle.'</div>';
+				echo $pdImage;
+				echo '<div class="pd-file-info-main mb-4">'.$pdFile.'</div>';
+				
+				if ($pdDescription) {
+					echo '<div class="pd-description mb-4 p-3 bg-light rounded">'.$pdDescription.'</div>';
+				}
+
+				echo $pdFeatures;
+				echo $pdChangelog;
+				echo $pdNotes;
+				
+				if ($pdVideo != '') {
+					echo '<div class="pd-video mt-3">' . $pdVideo . '</div>';
+				}
+			echo '</div>';
+
+			echo '<div class="col-lg-4 border-start-lg ps-lg-4">';
+				echo '<h4 class="h6 text-uppercase fw-bold text-secondary mb-3">Dettagli file</h4>';
+				echo '<div class="pd-metadata small">';
+					echo $pdFileSize;
+					echo $pdVersion;
+					echo $pdLicense;
+					echo $pdAuthor;
+					echo $pdAuthorEmail;
+					echo $pdFileDate;
+					echo $pdDownloads;
+				echo '</div>';
+				
+				if ($pdRating != '') {
+					echo '<div class="pd-rating mt-3 pt-3 border-top">' . $pdRating . '</div>';
+				}
+			echo '</div>';
+			echo '</div>'; // end row
+
+			echo '<div class="mt-4 pt-3 border-top d-flex flex-wrap align-items-center gap-3">';
+			if ($this->t['display_mirror_links'] == 5 || $this->t['display_mirror_links'] == 6) {
+				echo $pdMirrorLink2;
+				echo $pdMirrorLink1;
+			} else if ($this->t['display_mirror_links'] == 2 || $this->t['display_mirror_links'] == 3) {
+				echo $pdMirrorLink2.$pdMirrorLink1;
+			}
+			if ($pdReportLink != '') {
+				echo '<div class="pd-report">' . $pdReportLink . '</div>';
+			}
+			if ($pdReportLink != '') {
+				echo '<div class="pd-tags">'.$pdTags.'</div>';
+			}
+			echo '</div>';
+
+			echo '</div></div>'; // end card-body, end card
+
+
+			$o = '<div class="mt-4 text-center">';
+			if ((int)$v->confirm_license > 0) {
+				$o .= '<h4 class="h5 mb-3 fw-bold">'.Text::_('COM_PHOCADOWNLOAD_LICENSE_AGREEMENT').'</h4>';
+				$o .= '<div id="phoca-dl-license" class="p-3 border rounded mb-3 bg-white text-start overflow-auto" style="max-height:'.(int)$this->t['licenseboxheight'].'px">'.$v->licensetext.'</div>';
+
+				// External link
+				if ($v->link_external != '' && $v->directlink == 1) {
+					$o .= '<form action="" name="phocaDownloadForm" id="phocadownloadform" target="'.$this->t['download_external_link'].'">';
+					$o .= '<div class="form-check mb-3 d-inline-block text-start"><input type="checkbox" class="form-check-input" id="license_agree" name="license_agree" onclick="enableDownloadPD()" /> <label class="form-check-label" for="license_agree">'.Text::_('COM_PHOCADOWNLOAD_I_AGREE_TO_TERMS_LISTED_ABOVE').'</label></div><br/>';
+					$o .= '<button class="btn btn-primary" type="button" name="submit" onClick="location.href=\''.$v->link_external.'\';" id="pdlicensesubmit">'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'</button>';
+				} else {
+					$o .= '<form action="'.htmlspecialchars($this->t['action']).'" method="post" name="phocaDownloadForm" id="phocadownloadform">';
+					$o .= '<div class="form-check mb-3 d-inline-block text-start"><input type="checkbox" class="form-check-input" id="license_agree" name="license_agree" onclick="enableDownloadPD()" /> <label class="form-check-label" for="license_agree">'.Text::_('COM_PHOCADOWNLOAD_I_AGREE_TO_TERMS_LISTED_ABOVE').'</label></div><br/>';
+					$o .= '<button class="btn btn-primary" type="submit" name="submit" id="pdlicensesubmit">'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'</button>';
+					$o .= '<input type="hidden" name="download" value="'.$v->id.'" />';
+					$o .= '<input type="hidden" name="'. Session::getFormToken().'" value="1" />';
+				}
+				$o .= '</form>';
+
+				// For users who have disabled Javascript
+				$o .= '<script type=\'text/javascript\'>document.forms[\'phocadownloadform\'].elements[\'pdlicensesubmit\'].disabled=true</script>';
+			} else {
+				// External link
+				if ($v->link_external != '') {
+
+					if ($v->directlink == 1){
+						$finalLink = $v->link_external;
+					} else {
+						$finalLink = Route::_(PhocaDownloadRoute::getFileRoute($v->id, $v->categoryid,$v->alias, $v->categoryalias, 0, 'download'));
+					}
+
+					$o .= '<form action="" name="phocaDownloadForm" id="phocadownloadform" target="'.$this->t['download_external_link'].'">';
+					$o .= '<button class="btn btn-primary px-5" type="button" name="submit" onClick="location.href=\''.$finalLink.'\';" id="pdlicensesubmit">'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'</button>';
+				} else {
+					$o .= '<form action="'.htmlspecialchars($this->t['action']).'" method="post" name="phocaDownloadForm" id="phocadownloadform">';
+					$o .= '<button class="btn btn-primary px-5" type="submit" name="submit" id="pdlicensesubmit">'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'</button>';
+					$o .= '<input type="hidden" name="license_agree" value="1" />';
+					$o .= '<input type="hidden" name="download" value="'.$v->id.'" />';
+					$o .= '<input type="hidden" name="'. Session::getFormToken().'" value="1" />';
+				}
+				$o .= '</form>';
+
+			}
+			$o .= '</div>';
+
+		/*	if ($this->t['display_file_comments'] == 1) {
+				if (ComponentHelper::isEnabled('com_jcomments', true)) {
+					include_once(JPATH_BASE.'/components/com_jcomments/jcomments.php');
+					$o .= JComments::showComments($v->id, 'com_phocadownload_files', Text::_('COM_PHOCADOWNLOAD_FILE') .' '. $v->title);
+				}
+			}
+
+			if ($this->t['display_file_comments'] == 2) {
+				$o .= '<div class="pd-fbcomments">'.$this->loadTemplate('comments-fb').'</div>';
+			}*/
+
+			echo '<div class="row">';
+			echo '<div class="col-12">';
+			echo $o;
+			echo '</div></div>'; // end col, end row
+
+		} else {
+			echo '<div class="row">';
+			echo '<div class="col-12">';
+			echo '<h3 class="pd-filename-txt">'.Text::_('COM_PHOCADOWNLOAD_FILE') .'</h3>';
+			echo '<div class="pd-error">'.Text::_('COM_PHOCADOWNLOAD_NO_RIGHTS_ACCESS_CATEGORY').'</div>';
+			echo '</div></div>'; // end col, end row
+		}
+	}
+	echo '<div>&nbsp;</div>';// end of box
+} else {
+	echo '<div>&nbsp;</div>';
+}
+echo '</div></div>';
+echo '<div class="pd-cb">&nbsp;</div>';
+echo PhocaDownloadUtils::getInfo();
+?>
