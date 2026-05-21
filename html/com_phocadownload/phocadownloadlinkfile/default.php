@@ -11,6 +11,10 @@ defined('_JEXEC') or die('Restricted access');
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
+
+$template = Factory::getApplication()->getTemplate();
+$baseImagePath = Uri::root(false) . 'media/templates/site/' . $template . '/images/';
 
 $user = Factory::getUser();
 
@@ -266,7 +270,10 @@ Factory::getDocument()->addScriptDeclaration($js); ?>
                 </div>
 
                 <div class="btn-box-submit">
-                    <button class="btn btn-primary plg-button-insert " onclick="insertLink();return false;"><span class="icon-ok"></span> <?php echo Text::_('COM_PHOCADOWNLOAD_INSERT_CODE'); ?></button>
+                    <button class="btn btn-primary plg-button-insert " onclick="insertLink();return false;">
+                        <svg class="icon"><use xlink:href="<?= $baseImagePath ?>sprites.svg#it-check"></use></svg>
+                        <?php echo Text::_('COM_PHOCADOWNLOAD_INSERT_CODE'); ?>
+                    </button>
                 </div>
             </form>
 
@@ -331,7 +338,8 @@ Factory::getDocument()->addScriptDeclaration($js); ?>
                     <div class="ph-warning"><?php echo Text::_('COM_PHOCADOWNLOAD_WARNING_PLAYER_SIZE') ?></div>
                 <?php } ?>
                 <div class="btn-box-submit">
-                    <button class="btn btn-primary plg-button-insert " onclick="insertLink();return false;"><span class="icon-ok"></span> <?php echo Text::_('COM_PHOCADOWNLOAD_INSERT_CODE'); ?></button>
+                    <button class="btn btn-primary plg-button-insert " onclick="insertLink();return false;">
+                        <svg class="icon"><use xlink:href="<?= $baseImagePath ?>sprites.svg#it-check"></use></svg> <?php echo Text::_('COM_PHOCADOWNLOAD_INSERT_CODE'); ?></button>
                 </div>
             </form>
 
@@ -379,7 +387,8 @@ Factory::getDocument()->addScriptDeclaration($js); ?>
                 </div>
 
                 <div class="btn-box-submit">
-                    <button class="btn btn-primary plg-button-insert " onclick="insertLink();return false;"><span class="icon-ok"></span> <?php echo Text::_('COM_PHOCADOWNLOAD_INSERT_CODE'); ?></button>
+                    <button class="btn btn-primary plg-button-insert " onclick="insertLink();return false;">
+                        <svg class="icon"><use xlink:href="<?= $baseImagePath ?>sprites.svg#it-check"></use></svg> <?php echo Text::_('COM_PHOCADOWNLOAD_INSERT_CODE'); ?></button>
                 </div>
             </form>
 
@@ -407,7 +416,8 @@ Factory::getDocument()->addScriptDeclaration($js); ?>
                 </div>
 
                 <div class="btn-box-submit">
-                    <button class="btn btn-primary plg-button-insert " onclick="insertLink();return false;"><span class="icon-ok"></span> <?php echo Text::_('COM_PHOCADOWNLOAD_INSERT_CODE'); ?></button>
+                    <button class="btn btn-primary plg-button-insert " onclick="insertLink();return false;">
+                        <svg class="icon"><use xlink:href="<?= $baseImagePath ?>sprites.svg#it-check"></use></svg> <?php echo Text::_('COM_PHOCADOWNLOAD_INSERT_CODE'); ?></button>
                 </div>
             </form>
 
@@ -415,5 +425,7 @@ Factory::getDocument()->addScriptDeclaration($js); ?>
         }
         ?>
     </fieldset>
-    <div class="btn-box-back"><a class="btn btn-light" href="<?php echo $this->t['backlink']; ?>"><span class="icon-arrow-left"></span> <?php echo Text::_('COM_PHOCADOWNLOAD_BACK') ?></a></div>
+    <div class="btn-box-back"><a class="btn btn-light" href="<?php echo $this->t['backlink']; ?>">
+        <svg class="icon icon-xs d-inline-block me-1"><use xlink:href="<?= $baseImagePath ?>sprites.svg#it-arrow-left"></use></svg>
+        <?php echo Text::_('COM_PHOCADOWNLOAD_BACK') ?></a></div>
 </div>

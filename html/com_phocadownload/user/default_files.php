@@ -7,12 +7,14 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL
  */
  defined('_JEXEC') or die('Restricted access');
-use Joomla\CMS\Factory;
+$app		= Factory::getApplication();
+use Joomla\CMS\Uri\Uri;
+
+$template = $app->getTemplate();
+$baseImagePath = Uri::root(false) . 'media/templates/site/' . $template . '/images/';
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Session\Session;
-
-$app		= Factory::getApplication();
 $db			= Factory::getDBO();
 $user 		= Factory::getUser();
 $config		= Factory::getConfig();
@@ -60,8 +62,12 @@ if ($this->t['catidfiles'] == 0 || $this->t['catidfiles'] == '') {
 			<input type="text" name="search" id="pdsearch" placeholder="<?php echo Text::_( 'COM_PHOCADOWNLOAD_SEARCH' ); ?>" value="<?php echo $this->t['listsfiles']['search'];?>" title="<?php echo Text::_( 'COM_PHOCADOWNLOAD_SEARCH' ); ?>" class="form-control" />
 
 			<span class="input-group-btn">
-			<button class="btn btn-primary tip hasTooltip" type="submit" onclick="this.form.submit();"  title="<?php echo Text::_( 'COM_PHOCADOWNLOAD_SEARCH' ); ?>"><span class="icon-fw icon-search"></span></button>
-			<button class="btn btn-primary tip hasTooltip" type="button" onclick="document.getElementById('pdsearch').value='';document.phocadownloadfilesform.submit();" title="<?php echo Text::_( 'COM_PHOCADOWNLOAD_SEARCH' ); ?>"><span class="icon-fw icon-remove"></span></button>
+			<button class="btn btn-primary tip hasTooltip" type="submit" onclick="this.form.submit();"  title="<?php echo Text::_( 'COM_PHOCADOWNLOAD_SEARCH' ); ?>">
+				<svg class="icon"><use xlink:href="<?= $baseImagePath ?>sprites.svg#it-search"></use></svg>
+			</button>
+			<button class="btn btn-primary tip hasTooltip" type="button" onclick="document.getElementById('pdsearch').value='';document.phocadownloadfilesform.submit();" title="<?php echo Text::_( 'COM_PHOCADOWNLOAD_SEARCH' ); ?>">
+				<svg class="icon"><use xlink:href="<?= $baseImagePath ?>sprites.svg#it-close"></use></svg>
+			</button>
 			</span>
 		</div>
 	</div>
@@ -122,36 +128,36 @@ if (is_array($rows)) {
 	if ($row->published == 1) {
 		if ($rightDisplayDelete) {
 			echo '<a href="javascript:void(0)" onclick="javascript:Joomla.submitbutton(\'unpublish\', '.(int)$row->id.');" >';
-			//echo HTMLHelper::_('image', $this->t['pi'].'icon-publish.png', Text::_('COM_PHOCADOWNLOAD_PUBLISHED'));
-			echo '<span class="icon-fw icon-check-circle phc-green" title="'.Text::_('COM_PHOCADOWNLOAD_PUBLISHED').'"></span>';
+				//echo HTMLHelper::_('image', $this->t['pi'].'icon-publish.png', Text::_('COM_PHOCADOWNLOAD_PUBLISHED'));
+				echo '<svg class="icon phc-green" title="'.Text::_('COM_PHOCADOWNLOAD_PUBLISHED').'"><use xlink:href="'.$baseImagePath.'sprites.svg#it-check-circle"></use></svg>';
 			echo '</a>';
-		} else {
-			//echo HTMLHelper::_('image', $this->t['pi'].'icon-publish-g.png', Text::_('COM_PHOCADOWNLOAD_PUBLISHED'));
-			echo '<span class="icon-fw icon-check-circle phc-green" title="'.Text::_('COM_PHOCADOWNLOAD_PUBLISHED').'"></span>';
-		}
+			} else {
+				//echo HTMLHelper::_('image', $this->t['pi'].'icon-publish-g.png', Text::_('COM_PHOCADOWNLOAD_PUBLISHED'));
+				echo '<svg class="icon phc-green" title="'.Text::_('COM_PHOCADOWNLOAD_PUBLISHED').'"><use xlink:href="'.$baseImagePath.'sprites.svg#it-check-circle"></use></svg>';
+			}
 	}
 	if ($row->published == 0) {
 		if ($rightDisplayDelete) {
 			echo '<a href="javascript:void(0)" onclick="javascript:Joomla.submitbutton(\'publish\', '.(int)$row->id.');" >';
-			//echo HTMLHelper::_('image', $this->t['pi'].'icon-unpublish.png', Text::_('COM_PHOCADOWNLOAD_UNPUBLISHED'));
-			echo '<span class="icon-fw icon-minus-circle phc-red" title="'.Text::_('COM_PHOCADOWNLOAD_UNPUBLISHED').'"></span>';
+				//echo HTMLHelper::_('image', $this->t['pi'].'icon-unpublish.png', Text::_('COM_PHOCADOWNLOAD_UNPUBLISHED'));
+				echo '<svg class="icon phc-red" title="'.Text::_('COM_PHOCADOWNLOAD_UNPUBLISHED').'"><use xlink:href="'.$baseImagePath.'sprites.svg#it-minus-circle"></use></svg>';
 			echo '</a>';
-		} else {
-			//echo HTMLHelper::_('image', $this->t['pi'].'icon-unpublish-g.png', Text::_('COM_PHOCADOWNLOAD_UNPUBLISHED'));
-			echo '<span class="icon-fw icon-minus-circle phc-red" title="'.Text::_('COM_PHOCADOWNLOAD_UNPUBLISHED').'"></span>';
-		}
+			} else {
+				//echo HTMLHelper::_('image', $this->t['pi'].'icon-unpublish-g.png', Text::_('COM_PHOCADOWNLOAD_UNPUBLISHED'));
+				echo '<svg class="icon phc-red" title="'.Text::_('COM_PHOCADOWNLOAD_UNPUBLISHED').'"><use xlink:href="'.$baseImagePath.'sprites.svg#it-minus-circle"></use></svg>';
+			}
 	}
 	echo '</td>';
 
 	echo '<td class="ph-td-center">';
 	if ($rightDisplayDelete) {
 		echo '<a href="javascript:void(0)" onclick="javascript: if (confirm(\''.Text::_('COM_PHOCADOWNLOAD_WARNING_DELETE_ITEMS').'\')) {Joomla.submitbutton(\'delete\', '.(int)$row->id.');}" >';
-		//echo HTMLHelper::_('image', $this->t['pi'].'icon-trash.png', Text::_('COM_PHOCADOWNLOAD_DELETE'));
-		echo '<span class="icon-fw icon-trash phc-red" title="'.Text::_('COM_PHOCADOWNLOAD_DELETE').'"></span>';
+				//echo HTMLHelper::_('image', $this->t['pi'].'icon-trash.png', Text::_('COM_PHOCADOWNLOAD_DELETE'));
+				echo '<svg class="icon phc-red" title="'.Text::_('COM_PHOCADOWNLOAD_DELETE').'"><use xlink:href="'.$baseImagePath.'sprites.svg#it-delete"></use></svg>';
 		echo '</a>';
 	} else {
-		//echo HTMLHelper::_('image', $this->t['pi'].'icon-trash-g.png', Text::_('COM_PHOCADOWNLOAD_DELETE'));
-		echo '<span class="icon-fw icon-trash phc-grey" title="'.Text::_('COM_PHOCADOWNLOAD_DELETE').'"></span>';
+				//echo HTMLHelper::_('image', $this->t['pi'].'icon-trash-g.png', Text::_('COM_PHOCADOWNLOAD_DELETE'));
+				echo '<svg class="icon phc-grey" title="'.Text::_('COM_PHOCADOWNLOAD_DELETE').'"><use xlink:href="'.$baseImagePath.'sprites.svg#it-delete"></use></svg>';
 	}
 	echo '</td>';
 
@@ -199,11 +205,11 @@ if (is_array($rows)) {
 	// Approved
 	echo '<td class="ph-td-center">';
 	if ($row->approved == 1) {
-		//echo HTMLHelper::_('image', $this->t['pi'].'icon-publish.png', Text::_('COM_PHOCADOWNLOAD_APPROVED'));
-		echo '<span class="icon-fw icon-check-circle phc-green" title="'.Text::_('COM_PHOCADOWNLOAD_APPROVED').'"></span>';
+				//echo HTMLHelper::_('image', $this->t['pi'].'icon-publish.png', Text::_('COM_PHOCADOWNLOAD_APPROVED'));
+				echo '<svg class="icon phc-green" title="'.Text::_('COM_PHOCADOWNLOAD_APPROVED').'"><use xlink:href="'.$baseImagePath.'sprites.svg#it-check-circle"></use></svg>';
 	} else {
-		//echo HTMLHelper::_('image', $this->t['pi'].'icon-unpublish.png', Text::_('COM_PHOCADOWNLOAD_NOT_APPROVED'));
-		echo '<span class="icon-fw icon-minus-circle phc-red" title="'.Text::_('COM_PHOCADOWNLOAD_NOT_APPROVED').'"></span>';
+				//echo HTMLHelper::_('image', $this->t['pi'].'icon-unpublish.png', Text::_('COM_PHOCADOWNLOAD_NOT_APPROVED'));
+				echo '<svg class="icon phc-red" title="'.Text::_('COM_PHOCADOWNLOAD_NOT_APPROVED').'"><use xlink:href="'.$baseImagePath.'sprites.svg#it-minus-circle"></use></svg>';
 	}
 	echo '</td>';
 
@@ -298,7 +304,7 @@ if ($this->t['errorcatid'] != '') {
 				</span>
 			</span>
 			<input class="form-control" id="file-upload-filename" readonly="" type="text">
-			<button class="btn btn-primary" id="file-upload-submit"><span class="icon-fw icon-upload"></span> <?php echo Text::_('COM_PHOCADOWNLOAD_START_UPLOAD')?></button>
+			<button class="btn btn-primary" id="file-upload-submit"><svg class="icon"><use xlink:href="<?= $baseImagePath ?>sprites.svg#it-upload"></use></svg> <?php echo Text::_('COM_PHOCADOWNLOAD_START_UPLOAD')?></button>
 			<span id="upload-clear"></span>
 			</div>
 			</td>

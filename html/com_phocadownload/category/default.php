@@ -11,6 +11,11 @@ use Joomla\CMS\Router\Route;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
+
+$template = Factory::getApplication()->getTemplate();
+$baseImagePath = Uri::root(false) . 'media/templates/site/' . $template . '/images/';
 
 echo '<div id="phoca-dl-category-box" class="pd-category-view'.$this->t['p']->get( 'pageclass_sfx' ).'">';
 
@@ -18,6 +23,7 @@ echo '<div id="phoca-dl-category-box" class="pd-category-view'.$this->t['p']->ge
 //	echo '<h1>'. $this->escape($this->t['p']->get('page_heading')) . '</h1>';
 //}
 echo PhocaDownloadRenderFront::renderHeader(array());
+echo '<div class="alert alert-warning mb-4">OVERRIDE ATTIVO: PhocaDownload category/default.php</div>';
 // Search by tags - the category rights must be checked for every file
 $this->checkRights = 1;
 // -------------------------------------------------------------------
@@ -47,8 +53,10 @@ if ((int)$this->t['tagid'] > 0) {
 				}
 
 
+				// Back link with Bootstrap Italia sprite
 				echo '<div class="ph-top">'
-				.'<a class="btn btn-primary" title="'.$linkUpText.'" href="'. $linkUp.'" ><span class="icon-fw icon-arrow-left"></span> '
+				.'<a class="btn btn-primary" title="'.$linkUpText.'" href="'. $linkUp.'" >'
+				.'<svg class="icon icon-xs d-inline-block me-1"><use xlink:href="'.$baseImagePath.'sprites.svg#it-arrow-left"></use></svg> '
 				. $linkUpText
 				.'</a></div>';
 			}

@@ -9,22 +9,23 @@
 defined('_JEXEC') or die('Restricted access');
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Session\Session;
 use Joomla\CMS\Component\ComponentHelper;
-use Joomla\CMS\Uri\Uri;
 
-$app      = Factory::getApplication();
-$template = $app->getTemplate(true)->template;
-$spritePath = Uri::root(true) . '/media/templates/site/' . $template . '/images/sprites.svg';
-
-echo '<div id="phoca-dl-file-box" class="pd-file-view container py-4 '.$this->t['p']->get( 'pageclass_sfx' ).'" >';
+echo '<div id="phoca-dl-file-box" class="pd-file-view'.$this->t['p']->get( 'pageclass_sfx' ).'" >';
 
 //if ( $this->t['p']->get( 'show_page_heading' ) ) {
 //	echo '<h1>'. $this->escape($this->t['p']->get('page_heading')) . '</h1>';
 //}
 echo PhocaDownloadRenderFront::renderHeader(array());
+echo '<div class="alert alert-warning mb-4">OVERRIDE ATTIVO: PhocaDownload file/default.php</div>';
+
+// Base image path for Bootstrap Italia sprite
+$template = Factory::getApplication()->getTemplate();
+$baseImagePath = Uri::root(false) . 'media/templates/site/' . $template . '/images/';
 
 if (!empty($this->category[0])) {
 	echo '<div class="pd-file">';
@@ -39,9 +40,10 @@ if (!empty($this->category[0])) {
 				$linkUpText = '';
 			}
 
-			echo '<div class="ph-top mb-4">'
-				.'<a class="btn btn-outline-primary btn-sm d-inline-flex align-items-center" title="'.$linkUpText.'" href="'. $linkUp.'" >'
-				.'<svg class="icon icon-primary icon-xs me-2"><use href="'.$spritePath.'#it-arrow-left"></use></svg>'
+				// Back link styled for Bootstrap Italia using SVG sprite
+				echo '<div class="ph-top mb-3">'
+				.'<a class="btn btn-outline-primary btn-sm" title="'.$linkUpText.'" href="'. $linkUp.'" >'
+				.'<svg class="icon icon-xs d-inline-block me-1"><use xlink:href="'.$baseImagePath.'sprites.svg#it-arrow-left"></use></svg> '
 				. $linkUpText
 				.'</a></div>';
 		}
@@ -292,79 +294,68 @@ if (!empty($this->file[0])) {
 				}
 			}
 
-			// RENDER
-			echo '<div class="pd-filebox card shadow-sm border-light mt-4">';
-			echo '<div class="card-body p-4">';
-			
+			// RENDER: Card-style layout compatible with Bootstrap Italia
+			echo '<div class="card mb-4">';
+			echo '<div class="card-body">';
 			echo '<div class="row">';
-			echo '<div class="col-lg-8">';
-				echo '<div class="mb-3">'.$pdTitle.'</div>';
-				echo $pdImage;
-				echo '<div class="pd-file-info-main mb-4">'.$pdFile.'</div>';
-				
-				if ($pdDescription) {
-					echo '<div class="pd-description mb-4 p-3 bg-light rounded">'.$pdDescription.'</div>';
-				}
-
-				echo $pdFeatures;
-				echo $pdChangelog;
-				echo $pdNotes;
-				
-				if ($pdVideo != '') {
-					echo '<div class="pd-video mt-3">' . $pdVideo . '</div>';
-				}
+			echo '<div class="col-md-3 text-center mb-3 mb-md-0">';
+			echo $pdImage;
+			echo $pdFile;
 			echo '</div>';
-
-			echo '<div class="col-lg-4 border-start-lg ps-lg-4">';
-				echo '<h4 class="h6 text-uppercase fw-bold text-secondary mb-3">Dettagli file</h4>';
-				echo '<div class="pd-metadata small">';
-					echo $pdFileSize;
-					echo $pdVersion;
-					echo $pdLicense;
-					echo $pdAuthor;
-					echo $pdAuthorEmail;
-					echo $pdFileDate;
-					echo $pdDownloads;
-				echo '</div>';
-				
-				if ($pdRating != '') {
-					echo '<div class="pd-rating mt-3 pt-3 border-top">' . $pdRating . '</div>';
-				}
+			echo '<div class="col-md-9">';
+			if ($pdTitle) echo '<h3 class="h5 card-title mb-2">'.$pdTitle.'</h3>';
+			echo $pdDescription;
+			echo '<div class="row mt-3">';
+			echo '<div class="col-sm-6">';
+			echo $pdFileSize.$pdVersion.$pdLicense;
 			echo '</div>';
-			echo '</div>'; // end row
+			echo '<div class="col-sm-6">';
+			echo $pdAuthor.$pdAuthorEmail.$pdFileDate.$pdDownloads;
+			echo '</div>';
+			echo '</div>';// end metadata row
+			if ($pdFeatures) echo '<div class="mt-3">'.$pdFeatures.'</div>';
+			if ($pdChangelog) echo '<div class="mt-3">'.$pdChangelog.'</div>';
+			if ($pdNotes) echo '<div class="mt-3">'.$pdNotes.'</div>';
+			if ($pdVideo != '') { echo '<div class="mt-3 pd-video">' . $pdVideo . '</div>'; }
+			if ($pdRating != '') { echo '<div class="mt-3 pd-rating">' . $pdRating . '</div>'; }
+			echo '</div>';// end col-md-9
+			echo '</div>';// end row
+			echo '</div></div>';// end card-body & card
 
-			echo '<div class="mt-4 pt-3 border-top d-flex flex-wrap align-items-center gap-3">';
+			echo '<div class="row mb-3">';
+			echo '<div class="col-12">';
 			if ($this->t['display_mirror_links'] == 5 || $this->t['display_mirror_links'] == 6) {
-				echo $pdMirrorLink2;
-				echo $pdMirrorLink1;
+				echo '<div class="pd-buttons-bp d-flex gap-2">'.$pdMirrorLink2.$pdMirrorLink1.'</div>';
 			} else if ($this->t['display_mirror_links'] == 2 || $this->t['display_mirror_links'] == 3) {
-				echo $pdMirrorLink2.$pdMirrorLink1;
+				echo '<div class="pd-mirrors">'.$pdMirrorLink2.$pdMirrorLink1.'</div>';
 			}
+
 			if ($pdReportLink != '') {
-				echo '<div class="pd-report">' . $pdReportLink . '</div>';
+				echo '<div class="pd-report d-inline-block me-2">' . $pdReportLink . '</div>';
 			}
-			if ($pdReportLink != '') {
-				echo '<div class="pd-tags">'.$pdTags.'</div>';
+			if ($pdTags != '') {
+				echo '<div class="pd-tags d-inline-block">'.$pdTags.'</div>';
 			}
+
 			echo '</div>';
+			echo '</div>';// end mirrors/tags row
 
-			echo '</div></div>'; // end card-body, end card
 
-
-			$o = '<div class="mt-4 text-center">';
+		///	$o = '<div class="pd-cb">&nbsp;</div>';
+			$o = '';
 			if ((int)$v->confirm_license > 0) {
-				$o .= '<h4 class="h5 mb-3 fw-bold">'.Text::_('COM_PHOCADOWNLOAD_LICENSE_AGREEMENT').'</h4>';
-				$o .= '<div id="phoca-dl-license" class="p-3 border rounded mb-3 bg-white text-start overflow-auto" style="max-height:'.(int)$this->t['licenseboxheight'].'px">'.$v->licensetext.'</div>';
+				$o .= '<h4 class="pdfv-confirm-lic-text">'.Text::_('COM_PHOCADOWNLOAD_LICENSE_AGREEMENT').'</h4>';
+				$o .= '<div id="phoca-dl-license" style="height:'.(int)$this->t['licenseboxheight'].'px">'.$v->licensetext.'</div>';
 
 				// External link
 				if ($v->link_external != '' && $v->directlink == 1) {
 					$o .= '<form action="" name="phocaDownloadForm" id="phocadownloadform" target="'.$this->t['download_external_link'].'">';
-					$o .= '<div class="form-check mb-3 d-inline-block text-start"><input type="checkbox" class="form-check-input" id="license_agree" name="license_agree" onclick="enableDownloadPD()" /> <label class="form-check-label" for="license_agree">'.Text::_('COM_PHOCADOWNLOAD_I_AGREE_TO_TERMS_LISTED_ABOVE').'</label></div><br/>';
-					$o .= '<button class="btn btn-primary" type="button" name="submit" onClick="location.href=\''.$v->link_external.'\';" id="pdlicensesubmit">'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'</button>';
+					$o .= '<input type="checkbox" name="license_agree" onclick="enableDownloadPD()" /> <span>'.Text::_('COM_PHOCADOWNLOAD_I_AGREE_TO_TERMS_LISTED_ABOVE').'</span> ';
+					$o .= '<input class="btn btn-success" type="button" name="submit" onClick="location.href=\''.$v->link_external.'\';" id="pdlicensesubmit" value="'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'" />';
 				} else {
 					$o .= '<form action="'.htmlspecialchars($this->t['action']).'" method="post" name="phocaDownloadForm" id="phocadownloadform">';
-					$o .= '<div class="form-check mb-3 d-inline-block text-start"><input type="checkbox" class="form-check-input" id="license_agree" name="license_agree" onclick="enableDownloadPD()" /> <label class="form-check-label" for="license_agree">'.Text::_('COM_PHOCADOWNLOAD_I_AGREE_TO_TERMS_LISTED_ABOVE').'</label></div><br/>';
-					$o .= '<button class="btn btn-primary" type="submit" name="submit" id="pdlicensesubmit">'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'</button>';
+					$o .= '<input type="checkbox" name="license_agree" onclick="enableDownloadPD()" /> <span>'.Text::_('COM_PHOCADOWNLOAD_I_AGREE_TO_TERMS_LISTED_ABOVE').'</span> ';
+					$o .= '<input class="btn btn-success" type="submit" name="submit" id="pdlicensesubmit" value="'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'" />';
 					$o .= '<input type="hidden" name="download" value="'.$v->id.'" />';
 					$o .= '<input type="hidden" name="'. Session::getFormToken().'" value="1" />';
 				}
@@ -383,10 +374,10 @@ if (!empty($this->file[0])) {
 					}
 
 					$o .= '<form action="" name="phocaDownloadForm" id="phocadownloadform" target="'.$this->t['download_external_link'].'">';
-					$o .= '<button class="btn btn-primary px-5" type="button" name="submit" onClick="location.href=\''.$finalLink.'\';" id="pdlicensesubmit">'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'</button>';
+					$o .= '<input class="btn btn-success" type="button" name="submit" onClick="location.href=\''.$finalLink.'\';" id="pdlicensesubmit" value="'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'" />';
 				} else {
 					$o .= '<form action="'.htmlspecialchars($this->t['action']).'" method="post" name="phocaDownloadForm" id="phocadownloadform">';
-					$o .= '<button class="btn btn-primary px-5" type="submit" name="submit" id="pdlicensesubmit">'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'</button>';
+					$o .= '<input class="btn btn-success" type="submit" name="submit" id="pdlicensesubmit" value="'.Text::_('COM_PHOCADOWNLOAD_DOWNLOAD').'" />';
 					$o .= '<input type="hidden" name="license_agree" value="1" />';
 					$o .= '<input type="hidden" name="download" value="'.$v->id.'" />';
 					$o .= '<input type="hidden" name="'. Session::getFormToken().'" value="1" />';
@@ -394,7 +385,7 @@ if (!empty($this->file[0])) {
 				$o .= '</form>';
 
 			}
-			$o .= '</div>';
+
 
 		/*	if ($this->t['display_file_comments'] == 1) {
 				if (ComponentHelper::isEnabled('com_jcomments', true)) {
@@ -407,14 +398,14 @@ if (!empty($this->file[0])) {
 				$o .= '<div class="pd-fbcomments">'.$this->loadTemplate('comments-fb').'</div>';
 			}*/
 
-			echo '<div class="row">';
-			echo '<div class="col-12">';
+			echo '<div class="row ">';
+			echo '<div class="col-sm-12 col-md-12">';
 			echo $o;
 			echo '</div></div>'; // end col, end row
 
 		} else {
-			echo '<div class="row">';
-			echo '<div class="col-12">';
+			echo '<div class="row ">';
+			echo '<div class="col-sm-12 col-md-12">';
 			echo '<h3 class="pd-filename-txt">'.Text::_('COM_PHOCADOWNLOAD_FILE') .'</h3>';
 			echo '<div class="pd-error">'.Text::_('COM_PHOCADOWNLOAD_NO_RIGHTS_ACCESS_CATEGORY').'</div>';
 			echo '</div></div>'; // end col, end row
