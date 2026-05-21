@@ -23,7 +23,6 @@ echo '<div id="phoca-dl-category-box" class="pd-category-view'.$this->t['p']->ge
 //	echo '<h1>'. $this->escape($this->t['p']->get('page_heading')) . '</h1>';
 //}
 echo PhocaDownloadRenderFront::renderHeader(array());
-echo '<div class="alert alert-warning mb-4">OVERRIDE ATTIVO: PhocaDownload category/default.php</div>';
 // Search by tags - the category rights must be checked for every file
 $this->checkRights = 1;
 // -------------------------------------------------------------------
@@ -36,8 +35,9 @@ if ((int)$this->t['tagid'] > 0) {
 	}
 } else {
 	if (!empty($this->category[0])) {
-		echo '<div class="pd-category">';
-		if ($this->t['display_up_icon'] == 1) {
+		echo '<div class="pd-category container">';
+		if ($this->t['display_up_icon'] == 1) {// Search by tags - the category rights must be checked for every file
+
 
 			if (isset($this->category[0]->parent_id)) {
 				if ($this->category[0]->parent_id == 0) {
@@ -80,8 +80,11 @@ if ((int)$this->t['tagid'] > 0) {
 			$this->checkRights = 0;
 			$l = new PhocaDownloadLayout();
 
-			//echo '<h3>'.$this->category[0]->title. '</h3>';
-			echo PhocaDownloadRenderFront::renderSubHeader(array($this->category[0]->title), '', 'pd-ctitle');
+			// Category header with Bootstrap Italia icon
+			echo '<div class="pd-category-header">'
+			. '<svg class="icon icon-lg d-inline-block me-2 icon-primary" aria-hidden="true"><use xlink:href="'.$baseImagePath.'sprites.svg#it-folder"></use></svg>'
+			. '<h1 class="pd-category-title">'. $this->category[0]->title .'</h1>'
+			. '</div>';
 
 			// Description
 			/*if ($l->isValueEditor($this->category[0]->description)) {
@@ -108,8 +111,8 @@ if ((int)$this->t['tagid'] > 0) {
 					if ($rightDisplaySub == 1) {
 
 						echo '<div class="pd-subcategory">';
-						echo '<a href="'. Route::_(PhocaDownloadRoute::getCategoryRoute($valueSubCat->id, $valueSubCat->alias))
-							 .'">'. $valueSubCat->title.'</a>';
+						echo '<svg class="icon icon-sm d-inline-block me-1 icon-primary" aria-hidden="true"><use xlink:href="'.$baseImagePath.'sprites.svg#it-folder"></use></svg>';
+						echo '<a href="'. Route::_(PhocaDownloadRoute::getCategoryRoute($valueSubCat->id, $valueSubCat->alias)).'">'. $valueSubCat->title.'</a>';
 						echo ' <small>('.$valueSubCat->numdoc.')</small></div>' . "\n";
 						$subcategory = 1;
 					}

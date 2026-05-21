@@ -9,15 +9,19 @@
 defined('_JEXEC') or die('Restricted access');
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
 use Joomla\Filesystem\Path;
 use Joomla\Filesystem\File;
 
 echo '<div id="phoca-dl-categories-box" class="pd-categories-view'.$this->t['p']->get( 'pageclass_sfx' ).'">';
 
 //if ( $this->t['p']->get( 'show_page_heading' ) ) {
-//	echo '<h1>'. $this->escape($this->t['p']->get('page_heading')) . '</h1>';
+//	each '<h1>'. $this->escape($this->t['p']->get('page_heading')) . '</h1>';
 //}
 echo PhocaDownloadRenderFront::renderHeader(array());
+$template = Factory::getApplication()->getTemplate();
+$baseImagePath = Uri::root(false) . 'media/templates/site/' . $template . '/images/';
 
 if ( $this->t['description'] != '') {
 	echo '<div class="pd-desc">'. $this->t['description']. '</div>';
@@ -26,7 +30,7 @@ if ( $this->t['description'] != '') {
 
 if (!empty($this->t['categories'])) {
 	//$i = 1;
-    echo ' <div class="row row-cols-1 row-cols-md-3 g-4"> ';
+    echo '<div class="container row g-4">';
     foreach ($this->t['categories'] as $value) {
 
 		// Categories
@@ -49,8 +53,9 @@ if (!empty($this->t['categories'])) {
 
 				if ($rightDisplay == 1) {
 
-					$catOutput 	.= '<li class="list-group-item"><span class="pd-subcategory"></span><a href="'. Route::_(PhocaDownloadRoute::getCategoryRoute($valueCat->id, $valueCat->alias))
-								.'">'. $valueCat->title.'</a>';
+$catOutput 	.= '<li class="list-group-item">'
+					.'<svg class="icon icon-xs d-inline-block me-1 icon-primary" aria-hidden="true"><use xlink:href="'.$baseImagePath.'sprites.svg#it-folder"></use></svg>'
+					.'<a href="'. Route::_(PhocaDownloadRoute::getCategoryRoute($valueCat->id, $valueCat->alias)).'">'. $valueCat->title.'</a>';
 
 					if ($this->t['displaynumdocsecs'] == 1) {
 						$catOutput  .=' <small>('.$valueCat->numdoc .')</small>';
@@ -85,7 +90,7 @@ if (!empty($this->t['categories'])) {
 		// - - - - - - - - - - - - - - - - - - - - - -
 
 		if ($rightDisplay == 1) {
-            echo '<div class="col">';
+            echo '<div class="col-12 col-md-6 col-lg-4">';
             echo '<div class="card h-100">';
 
             if (isset($value->image) && $value->image != '') {
@@ -94,9 +99,11 @@ if (!empty($this->t['categories'])) {
 
             echo '<div class="card-body">';
 
-            echo '<h3 class="card-title">';
-			echo '<a href="'. Route::_(PhocaDownloadRoute::getCategoryRoute($value->id, $value->alias)).'">'. $value->title.'</a>';
-
+            echo '<h3 class="card-title pd-category-card-title">';
+		echo '<span class="pd-category-icon">';
+		echo '<svg class="icon icon-lg icon-primary" aria-hidden="true"><use xlink:href="'.$baseImagePath.'sprites.svg#it-folder"></use></svg>';
+		echo '</span>';
+		echo '<a href="'. Route::_(PhocaDownloadRoute::getCategoryRoute($value->id, $value->alias)).'">'. $value->title.'</a>';
 			/*if ($this->t['displaynumdocsecsheader'] == 1) {
 				$numDocAll = (int)$numDoc + (int)$value->numdoc;
 				//$numDoc ... only files in subcategories

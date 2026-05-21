@@ -1,2 +1,71 @@
  /* INSERISCI QUI LE REGOLE CUSTOM DEL TUO SITO WEB */
 
+.pd-categories-view .card-title.pd-category-card-title {
+    text-align: center;
+}
+
+.pd-categories-view .pd-category-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+
+.pd-categories-view .pd-category-icon svg {
+    width: 2rem;
+    height: 2rem;
+}
+
+.pd-categories-view .card-title.pd-category-card-title a {
+    display: inline-block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: inherit;
+    text-decoration: none;
+}
+
+.pd-categories-view .card-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.pd-category-view .pd-category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.pd-category-view .pd-category-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.pd-category-view .pd-category-header svg {
+    width: 2rem;
+    height: 2rem;
+}
+
+.pd-category-view .pd-subcategory {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.pd-category-view .pd-subcategory svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.pd-category-view .pd-subcategory a {
+    font-weight: 600;
+    color: inherit;
+    text-decoration: none;
+}
+
+.pd-category-view .pd-subcategory small {
+    color: #6c757d;
+}
+

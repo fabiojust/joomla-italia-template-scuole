@@ -8,6 +8,7 @@
  */
 defined('_JEXEC') or die('Restricted access');
 
+use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Layout\FileLayout;
 use Joomla\CMS\Router\Route;
@@ -15,6 +16,8 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Uri\Uri;
 
 $l = new PhocaDownloadLayout();
+$template = Factory::getApplication()->getTemplate();
+$baseImagePath = Uri::root(false) . 'media/templates/site/' . $template . '/images/';
 
 $layoutCM 	= new FileLayout('category_modal', null, array('component' => 'com_phocadownload'));
 
@@ -93,6 +96,7 @@ if (!empty($this->files)) {
 					. $imageFileName['filenamestyle'].'>';
 
 				$pdFile .= '<div class="pd-float">';
+				$pdFile .= '<svg class="icon icon-xs d-inline-block me-1 icon-primary" aria-hidden="true"><use xlink:href="'.$baseImagePath.'sprites.svg#it-file"></use></svg>';
 				$pdFile .= $linkDownloadB .$l->getName($v->title, $v->filename) .$linkDownloadE;
 				$pdFile .= '</div>';
 

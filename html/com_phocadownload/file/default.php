@@ -120,6 +120,7 @@ if (!empty($this->file[0])) {
 					. $imageFileName['filenamestyle'].'>';
 
 				$pdFile .= '<div class="pd-float">';
+				$pdFile .= '<svg class="icon icon-xs d-inline-block me-1 icon-primary" aria-hidden="true"><use xlink:href="'.$baseImagePath.'sprites.svg#it-file"></use></svg>';
 				$pdFile .= $l->getName($v->title, $v->filename);
 				$pdFile .= '</div>';
 
